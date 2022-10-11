@@ -23,10 +23,11 @@ class p2p_controller:
 
             elif opc == 2:
                 ip = self.view.join_network()
-                status = 20+self.node.join_network(ip)
+                status = 20+self.join_network(ip)
                 self.view.msg_status(status)
             elif opc == 3:
-                pass
+                status = 30+self.node.network_leave()
+                self.view.msg_status(status)
             elif opc == 4:
                 self.view.node_info(self.node)
             elif opc == 9:
@@ -35,7 +36,8 @@ class p2p_controller:
         except ValueError:
             opc = 0
     
-    
+    def join_network(ip):
+        pass
     
     def controll_receiver(self) -> None:
         

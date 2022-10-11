@@ -16,3 +16,5 @@ class Node:
         else:
             return 2
             
+    def network_leave(self):
+        pass
