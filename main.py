@@ -29,7 +29,7 @@ class Controller:
 
     #Função responsável por receber os pacotes da rede.
     def receiver(self) -> None:
-        print(f"=> Iniciando P2P Server (ip={self.node.ip}, porta={self.node.porta})")
+        print(f"=> Iniciando P2P Server")
         orig = ("", self.node.porta)
         self.udp.bind(orig)
 
@@ -57,7 +57,7 @@ class Controller:
     
     #Função responsável por enviar os pacotes aos destinatários na rede.
     def send(self, msg, ip):
-        dest = [ip, 12345]
+        dest = (ip, 12345)
         try:
             msg_json = json.dumps(msg)
             self.udp.sendto(msg_json.encode('utf-8'), dest)
@@ -82,7 +82,7 @@ class Controller:
                 if opc == 1:
                     self.network_start()
                 elif opc == 2:
-                    self.network_lookup()
+                    self.network_lookup(self.node)
                 elif opc == 3:
                     self.network_leave()
                 elif opc == 4:
@@ -105,17 +105,20 @@ class Controller:
             print("Erro: rede P2P já foi inicializada!")
 
     #Função responsável por encontrar a posição do nó ingressante na rede
-    def network_lookup(self):
+    def network_lookup(self, node_find):
         os.system("clear")
         ip = input("Informe o IP do nó: ")
         pkg = {
             "codigo": 2,
             "identificador": self.node.id,
-            "ip_origem_busca": self.node.ip,
-            "id_busca": str ###Quem é esse? Identificar esse sujeito para poder rodar o código!
+            "ip_origem_busca": node_find.ip,
+            "id_busca": node_find.id
         }
         self.send(pkg, ip)
         input("Pressione ENTER para continuar")
+
+    def lookup_received(self, msg_received):
+
 
     #função responsável por ingressar o nó na rede
     def network_join(self, ip):
