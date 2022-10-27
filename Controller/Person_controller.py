@@ -1,9 +1,9 @@
+from cgitb import lookup
 import json
 import os
 import socket
 import sys
 import threading
-
 from Service.Person_service import Person_service
 
 
@@ -14,7 +14,7 @@ class Person_controller:
         self.t1 = threading.Thread(target=self.receiver)
         self.t2 = threading.Thread(target=self.interface)
 
-    #Interface de controle do programa
+    #Interface de interação do programa com o usuário
     def interface(self) -> None:
         while True:
             os.system("clear")
@@ -28,9 +28,9 @@ class Person_controller:
             try:
                 opc = int(input("=> "))
                 if opc == 1:
-                    self.person_service.network_start()
+                    self.network_start()
                 elif opc == 2:
-                    self.network_lookup(self.node)
+                    self.netwok_lookup(self.person_service.node.id, self.person_service.node.ip)
                 elif opc == 3:
                     self.network_leave()
                 elif opc == 4:
@@ -43,10 +43,10 @@ class Person_controller:
 
 
 
-    #Função responsável por receber os pacotes da rede.
+    #Função responsável por receber as mensagens da rede.
     def receiver(self) -> None:
-        print(f"=> Iniciando P2P Server (ip={self.node.ip}, porta={self.node.porta})")
-        orig = ("", self.node.porta)
+        print(f"=> Iniciando P2P Server")
+        orig = ("", 12345)
         self.udp.bind(orig)
 
         while True:
@@ -54,11 +54,11 @@ class Person_controller:
             msg_decoded = msg.decode("utf-8")
             string_dict = json.loads(msg_decoded)
             if string_dict["codigo"] == 0:
-                pass
+                self.join_response(cliente)
             elif string_dict["codigo"] == 1:
                 pass
             elif string_dict["codigo"] == 2:
-                pass
+                self.lookup_received(string_dict)
             elif string_dict["codigo"] == 3:
                 pass
             elif string_dict["codigo"] == 64:
@@ -66,7 +66,7 @@ class Person_controller:
             elif string_dict["codigo"] == 65:
                 pass
             elif string_dict["codigo"] == 66:
-                pass
+                self.network_join(string_dict["ip"])
             elif string_dict["codigo"] == 67:
                 pass
 
@@ -82,3 +82,21 @@ class Person_controller:
             sys.exit(0)
 
     
+    def network_start(self):
+        self.person_service.network_start()
+
+    def netwok_lookup(self, node_id, node_ip):
+        os.system("clear")
+        ip_dest = input("Informe o IP do nó: ")
+        self.send(self.person_service.network_lookup(node_id, node_ip, ip_dest))
+
+    def lookup_received(self, msg):
+        self.send(self.person_service.lookup_received(msg))
+
+    def network_join(self, ip):
+        self.send(self.person_service.network_join(ip))
+
+    def join_response(self, ip):
+        self.send(self.person_service.join_response(ip))
+        
+           

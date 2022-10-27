@@ -105,7 +105,7 @@ class Controller:
             print("Erro: rede P2P já foi inicializada!")
 
     #Função responsável por encontrar a posição do nó ingressante na rede
-    def network_lookup(self, node_find):
+    def network_lookup(self, node_find: Node):
         os.system("clear")
         ip = input("Informe o IP do nó: ")
         pkg = {
@@ -118,7 +118,7 @@ class Controller:
         input("Pressione ENTER para continuar")
 
     def lookup_received(self, msg_received):
-
+        pass
 
     #função responsável por ingressar o nó na rede
     def network_join(self, ip):
