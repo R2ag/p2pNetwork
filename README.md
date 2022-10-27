@@ -1,22 +1,22 @@
 # p2pNetwork
 O trabalho consiste em aplicativo para uma rede P2P usando a linguagem Python com os métodos de entrada, atualização e saída da rede P2P.
 
-###Objetivos do trabalho:
+### Objetivos do trabalho:
 Implementar um serviço de transferência de arquivos em redes P2P usando comunicação via sockets, conforme a especificação descrita neste documento;
 Garantir a interoperabilidade das implementações conforme especificação.
 
-###Especificação:
+### Especificação:
 
 - UDP/ Porta 12345;
 - O identificador de cada nó da rede P2P será de 32 bits gerado aleatoriamente através do hash MD5 do endereço IP da máquina;
 
-###Funcionalidades previstas:
+### Funcionalidades previstas:
 - Join: permitir que uma nova máquina participe da rede;
 - Leave: permitir que uma máquina deixe a rede voluntariamente;
 - Lookup: permitir que se identifique o sucessor de um identificador na rede – na prática corresponde ao nó responsável pelo armazenamento do índice do conteúdo pesquisado;
 - Update: mensagem para atualização de sucessor;
 
-###Dados enviados/recebidos por funcionalidade:
+### Dados enviados/recebidos por funcionalidade:
 - Join:
 	- Envia: < código da mensagem, identificador da nova máquina>
 	- Recebe: < código da mensagem, identificador do novo sucessor, endereço IP do novo sucessor, identificador do novo antecessor, endereço IP do novo antecessor>
@@ -31,9 +31,9 @@ Garantir a interoperabilidade das implementações conforme especificação.
 	- Envia: < código da mensagem, identificador do novo sucessor, endereço ip do novo sucessor>
 	- Recebe < código da mensagem, identificador de origem> 
 
-###Formatação dos dados enviados/recebidos e formato dos pacotes:
+### Formatação dos dados enviados/recebidos e formato dos pacotes:
 
-####Códigos de Mensagens: Inteiros de 8 bits (1 Byte).
+#### Códigos de Mensagens: Inteiros de 8 bits (1 Byte).
 
 	0 - Join
 	1 - Leave
@@ -44,7 +44,7 @@ Garantir a interoperabilidade das implementações conforme especificação.
 	66 - Resposta do Lookup
 	67 - Resposta do Update
 
-####Mensagens das Mensagens (JSON)
+#### Mensagens das Mensagens (JSON)
  - JOIN
 	- ENVIO
 			{
@@ -115,7 +115,7 @@ Garantir a interoperabilidade das implementações conforme especificação.
 			"id_origem_mensagem": str
 			} 
 
-###Operação
+### Operação
 
 - O programa deverá ter uma opção de inicialização da rede, onde o nó que cria essa rede é o único participante no momento da criação;
 - Para entrar na rede é preciso conhecer o endereço IP de alguém que esteja participando da rede, não necessariamente o nó criador;
