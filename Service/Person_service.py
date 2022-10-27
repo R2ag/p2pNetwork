@@ -58,9 +58,14 @@ class Person_service:
     def join_response(self, ip):
         pkg = {
             "codigo": 64,
-            "id_sucessor": self.node.sucessor["id"],
-            "ip_sucessor": self.node.sucessor["ip"],
+            "id_sucessor": self.node.id,
+            "ip_sucessor": self.node.ip,
             "id_antecessor": self.node.antecessor["id"],
             "ip_antecessor": self.node.antecessor["ip"]
         }
         return pkg, ip
+
+    def network_init(self, msg):
+        self.node.sucessor = {"id": msg["id_sucessor"], "ip": msg["ip_sucessor"]}
+        self.node.antecessor = {"id": msg["id_antecessor"], "ip": msg["ip_antecessor"]}
+        self.node._inicializado = True

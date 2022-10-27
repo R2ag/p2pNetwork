@@ -62,7 +62,7 @@ class Person_controller:
             elif string_dict["codigo"] == 3:
                 pass
             elif string_dict["codigo"] == 64:
-                pass
+                self.network_init(string_dict)
             elif string_dict["codigo"] == 65:
                 pass
             elif string_dict["codigo"] == 66:
@@ -99,4 +99,6 @@ class Person_controller:
     def join_response(self, ip):
         self.send(self.person_service.join_response(ip))
         
-           
+    def network_init(self, msg):
+        self.person_service.network_init(msg)
+
