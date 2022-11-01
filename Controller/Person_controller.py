@@ -36,7 +36,6 @@ class Person_controller:
                 elif opc == 4:
                     self.node_info()
                 elif opc == 9:
-                    self.__t1.terminate()
                     sys.exit(0)
             except ValueError:
                 opc = 0
@@ -56,19 +55,19 @@ class Person_controller:
             if string_dict["codigo"] == 0:
                 self.join_response(cliente)
             elif string_dict["codigo"] == 1:
-                pass
+                self.leave_update(msg, cliente[0])
             elif string_dict["codigo"] == 2:
                 self.lookup_received(string_dict)
             elif string_dict["codigo"] == 3:
-                pass
+                self.update_received(string_dict, cliente[0])
             elif string_dict["codigo"] == 64:
                 self.network_init(string_dict)
             elif string_dict["codigo"] == 65:
-                pass
+                print("leave ok")
             elif string_dict["codigo"] == 66:
                 self.network_join(string_dict["ip"])
             elif string_dict["codigo"] == 67:
-                pass
+                print("update ok")
 
     
     #Função responsável por enviar os pacotes aos destinatários na rede.
@@ -101,4 +100,26 @@ class Person_controller:
         
     def network_init(self, msg):
         self.person_service.network_init(msg)
+        self.send(self.person_service.update(1))
+        self.send(self.person_service.update(2))
 
+    def update_received(self, msg, cliente):
+        self.send(self.person_service.update_received(msg), cliente)
+
+    def node_info(self):
+        os.system("clear")
+        print("#      Informações do Nó       #")
+        print(f"# ID: {self.person_service.node.id}")
+        print(f"# IP: {self.person_service.node.ip}")
+        print(f"# Sucessor: {self.person_service.node.sucessor}")
+        print(f"# Antecessor: {self.person_service.node.antecessor}")
+        print("#------------------------------#")
+        input("Pressione ENTER para continuar")
+
+    def network_leave(self):
+        pkg = self.person_service.network_leave()
+        self.send(pkg, self.person_service.node.antecessor["ip"])
+        self.send(pkg, self.person_service.node.antecessor["ip"])
+
+    def leave_update(self, msg, ip):
+        self.send(self.person_service.leave_update(msg), ip)

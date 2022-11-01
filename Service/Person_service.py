@@ -1,3 +1,5 @@
+from curses.has_key import has_key
+from queue import Empty
 from re import I
 import sys
 
@@ -69,3 +71,63 @@ class Person_service:
         self.node.sucessor = {"id": msg["id_sucessor"], "ip": msg["ip_sucessor"]}
         self.node.antecessor = {"id": msg["id_antecessor"], "ip": msg["ip_antecessor"]}
         self.node._inicializado = True
+
+    def update(self, opc):
+        if opc == 1:
+            pkg = {
+                "codigo": 3,
+                "identificador": self.node.id,
+                "id_novo_sucessor": self.node.id,
+                "ip_novo_sucessor": self.node.ip
+            }
+            return (pkg, self.node.antecessor["ip"])
+        elif opc == 2:
+            pkg = {
+                "codigo": 3,
+                "identificador": self.node.id,
+                "id_novo_antecessor": self.node.id,
+                "ip_novo_antecessor": self.node.ip
+            }
+            return (pkg, self.node.sucessor["ip"])
+
+            
+
+    def update_received(self, msg):
+        if (msg.has_key("id_novo_antecessor")):
+            self.node.antecessor["id"] = msg["id_novo_antecessor"]
+            self.node.antecessor["ip"] = msg["ip_novo_antecessor"]
+        elif (msg.has_key("id_novo_sucessor")):
+            self.node.sucessor["id"] = msg["id_novo_sucessor"]
+            self.node.sucessor["ip"] = msg["ip_novo_sucessor"]
+
+        pkg = {
+            "codigo": 67,
+            "id_origem_mensagem": self.node.id 
+        }
+
+        return pkg
+
+    def network_leave(self):
+        pkg = {
+            "codigo": 1,
+            "identificador": self.node.id,
+            "id_sucessor": self.node.sucessor["id"],
+            "ip_sucessor": self.node.sucessor["ip"],
+            "id_antecessor": self.node.antecessor["id"],
+            "ip_antecessor": self.node.antecessor["ip"]
+        } 
+
+        return pkg
+
+    def leave_update(self, msg):
+        if (msg["identificador"] == self.node.antecessor["id"]):
+            self.node.antecessor["id"] = msg["id_antecessor"]
+            self.node.antecessor["ip"] = msg["ip_antecessor"]
+        if (msg["identificador"] == self.node.sucessor["id"]):
+            self.node.sucessor["id"] = msg["id_sucessor"]
+            self.node.sucessor["ip"] = msg["ip_sucessor"]
+        
+        pkg = {
+            "codigo": 65,
+            "identificador": self.node.id
+        }
