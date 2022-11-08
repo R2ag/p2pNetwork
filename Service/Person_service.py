@@ -1,41 +1,50 @@
 from curses.has_key import has_key
-from queue import Empty
-from re import I
-import sys
-
+import netifaces as ni
 from Entity.Node import Node
 
 
 class Person_service:
     def __init__(self, ip=None) -> None:
-        self.node = Node(ip=sys.argv[1])
+        self.node = Node(ip=self.get_ip())
+
+    def get_ip(self):
+        interfaces = ni.interfaces()
+        for i in interfaces:
+            ip = (ni.ifaddresses(i)[ni.AF_INET][0]['addr'])
+            if ip != '127.0.0.1':    
+                return ip
 
     def network_start(self):
+        print("Criando nova Rede" )
         if not self.node._inicializado:
             self.node.sucessor = {"id": self.node.id, "ip": self.node.ip}
             self.node.antecessor = {"id": self.node.id, "ip": self.node.ip}
             self.node._inicializado = True
             print("Rede P2P Inicializada!")
         else:
-            print("Erro: rede P2P já foi inicializada!")    
+            print("Erro: rede P2P já foi inicializada!")
 
-    def network_lookup(self, node_id, node_ip, ip_dest):
+        input("Pressione ENTER para continuar")    
+
+    def network_lookup(self, node_id, node_ip):
+        print("iniciando Lookup")
         pkg = {
             "codigo": 2,
             "identificador": self.node.id,
             "ip_origem_busca": node_ip,
             "id_busca": node_id
         }
-        return pkg, ip_dest
+        return pkg
 
 
     def lookup_received(self, msg):
-        if (msg["id_busca"] > self.node.sucessor["id"]):
-            return(self.network_lookup(msg["id_busca"], msg["ip_origem_busca"], self.node.sucessor["ip"]))
-        elif (msg["id_busca"] < self.node.antecessor["id"]):
-            return(self.network_lookup(msg["id_busca"], msg["ip_origem_busca"], self.node.antecessor["ip"]))
+        if (msg["id_busca"] > self.node.sucessor["id"] and self.node.sucessor["ip"] != self.node.ip and msg["identificador"] != self.node.sucessor["id"]):
+            return(self.network_lookup(msg["id_busca"], msg["ip_origem_busca"]),self.node.sucessor["ip"])
+        elif (msg["id_busca"] < self.node.antecessor["id"] and self.node.sucessor["ip"] != self.node.ip and msg["identificador"] != self.node.sucessor["id"]):
+            return(self.network_lookup(msg["id_busca"], msg["ip_origem_busca"]), self.node.antecessor["ip"])
         else:
-            return(self.lookup_response(msg))
+            pkg, ip = self.lookup_response(msg) 
+            return(pkg, ip)
 
 
     def lookup_response(self, msg):
@@ -50,14 +59,14 @@ class Person_service:
         return pkg, msg["ip_origem_busca"]
     
     
-    def network_join(self, ip):
+    def network_join(self):
         pkg = {
             "codigo": 0,
             "id": self.node.id
         }
-        return pkg, ip
+        return pkg
 
-    def join_response(self, ip):
+    def join_response(self):
         pkg = {
             "codigo": 64,
             "id_sucessor": self.node.id,
@@ -65,7 +74,7 @@ class Person_service:
             "id_antecessor": self.node.antecessor["id"],
             "ip_antecessor": self.node.antecessor["ip"]
         }
-        return pkg, ip
+        return pkg
 
     def network_init(self, msg):
         self.node.sucessor = {"id": msg["id_sucessor"], "ip": msg["ip_sucessor"]}
@@ -73,7 +82,7 @@ class Person_service:
         self.node._inicializado = True
 
     def update(self, opc):
-        if opc == 1:
+        if opc == 0:
             pkg = {
                 "codigo": 3,
                 "identificador": self.node.id,
@@ -81,7 +90,7 @@ class Person_service:
                 "ip_novo_sucessor": self.node.ip
             }
             return (pkg, self.node.antecessor["ip"])
-        elif opc == 2:
+        elif opc == 1:
             pkg = {
                 "codigo": 3,
                 "identificador": self.node.id,
@@ -93,12 +102,19 @@ class Person_service:
             
 
     def update_received(self, msg):
-        if (msg.has_key("id_novo_antecessor")):
+        if (msg.__contains__("id_novo_antecessor")):
             self.node.antecessor["id"] = msg["id_novo_antecessor"]
             self.node.antecessor["ip"] = msg["ip_novo_antecessor"]
-        elif (msg.has_key("id_novo_sucessor")):
+            if (self.node.sucessor["ip"] == self.node.ip):
+                self.node.sucessor["id"] = msg["id_novo_antecessor"]
+                self.node.sucessor["ip"] = msg["ip_novo_antecessor"]
+        elif (msg.__contains__("id_novo_sucessor")):
             self.node.sucessor["id"] = msg["id_novo_sucessor"]
             self.node.sucessor["ip"] = msg["ip_novo_sucessor"]
+            if (self.node.antecessor["ip"] == self.node.ip):
+                self.node.antecessor["id"] = msg["id_novo_sucessor"]
+                self.node.antecessor["ip"] = msg["ip_novo_sucessor"]
+        
 
         pkg = {
             "codigo": 67,
@@ -123,7 +139,7 @@ class Person_service:
         if (msg["identificador"] == self.node.antecessor["id"]):
             self.node.antecessor["id"] = msg["id_antecessor"]
             self.node.antecessor["ip"] = msg["ip_antecessor"]
-        if (msg["identificador"] == self.node.sucessor["id"]):
+        elif (msg["identificador"] == self.node.sucessor["id"]):
             self.node.sucessor["id"] = msg["id_sucessor"]
             self.node.sucessor["ip"] = msg["ip_sucessor"]
         
@@ -131,3 +147,8 @@ class Person_service:
             "codigo": 65,
             "identificador": self.node.id
         }
+        return pkg
+
+    def clear(self):
+        self.node.sucessor = None
+        self.node.antecessor = None
